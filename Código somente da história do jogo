@@ -1,0 +1,163 @@
+import pygame
+import sys
+
+pygame.init()
+
+# ajustes da tela
+screen_width = 960
+screen_height = 720
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("All In")
+
+# cores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+DARK_BOX = (20, 20, 20)
+
+# fonte dos textos
+font = pygame.font.SysFont("arial", 28)
+context_font = pygame.font.SysFont("arial", 24, italic=True)
+
+# carrega as imagens
+def carregar_imagem(nome):
+    return pygame.transform.scale(pygame.image.load(f"imagens/{nome}"), (screen_width, screen_height))
+
+imagens = [
+    carregar_imagem("tela_inicial.jpg"),
+    carregar_imagem("gabriel_computador.jpg"),
+    carregar_imagem("gabriel_encontra_eduardo.jpg"),
+    carregar_imagem("gabriel_pensativo.jpg"),
+    carregar_imagem("gabriel_encontra_bob.jpg"),
+    carregar_imagem("gabriel_dinheiro.jpg"),
+    carregar_imagem("gabriel_entrando_no_cassino.jpg")
+]
+
+# cada cena com imagem e textos 
+cenas = [
+    {
+        "imagem": imagens[1],
+        "contexto": "Gabriel, depois de um dia cansativo, chega em casa e abre seu velho computador.",
+        "falas": [
+            "\"Ganhe dinheiro jogando!\"",
+            "\"Transforme seu tempo livre em dinheiro fácil!\"",
+            "\"Faça sua própria sorte agora!\""
+        ]
+    },
+    {
+        "imagem": imagens[2],
+        "contexto": "Gabriel encontra um velho amigo...",
+        "falas": [
+            "\"E aí, Gabriel? Quanto tempo, mano!\"",
+            "\"Você está sabendo do novo cassino aqui perto?\"",
+            "\"Tem o melhor caça-níquel de São Paulo, está dando muito dinheiro.\"",
+            "\"Preciso conseguir o suficiente pra sacar, por causa do limite mínimo.\""
+        ]
+    },
+    {
+        "imagem": imagens[3],
+        "contexto": "Gabriel no caminho de volta para casa...",
+        "falas": [
+            "\"Será que tudo isso é verdade?\"",
+            "\"Talvez eu consiga mudar de vida, ganhar muito dinheiro finalmente.\""
+        ]
+    },
+    {
+        "imagem": imagens[4],
+        "contexto": "Passando pela rua no seu dia de trabalho, Gabriel é abordado...",
+        "falas": [
+            "\"E aí garoto, já conheceu o novo caça-níquel que todo mundo anda falando?\"",
+            "\"Tenho certeza que você tá querendo jogar.\"",
+            "\"Vou te emprestar um dinheiro pra te ajudar na sua correria.\""
+        ]
+    },
+    {
+        "imagem": imagens[5],
+        "contexto": "Gabriel em casa, pensando com o dinheiro nas mãos...",
+        "falas": [
+            "\"Amanhã eu estou pronto pra jogar.\"",
+            "\"Vamos ver se isso realmente vai me ajudar.\""
+        ]
+    },
+    {
+        "imagem": imagens[6],
+        "contexto": "No dia seguinte...",
+        "falas": [
+            "\"Já estou aqui, é agora ou nunca.\""
+        ]
+    }
+]
+
+# tela inicial
+inicio = True
+indice_cena = 0
+indice_fala = 0
+texto_parcial = ""
+tempo_fala = 0
+velocidade_texto = 30  #  indica os milissegundos por letra
+
+# loop principal
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    screen.fill(BLACK)
+    tempo_atual = pygame.time.get_ticks()
+
+    if inicio:
+        screen.blit(imagens[0], (0, 0))
+        text = font.render("Pressione ESPAÇO para iniciar", True, WHITE)
+        screen.blit(text, (screen_width//2 - text.get_width()//2, screen_height - 100))
+    else:
+        cena = cenas[indice_cena]
+        screen.blit(cena["imagem"], (0, 0))
+
+        # caixa do contexto
+        pygame.draw.rect(screen, DARK_BOX, (40, 20, screen_width - 80, 45), border_radius=8)
+        contexto = context_font.render(cena["contexto"], True, WHITE)
+        screen.blit(contexto, (55, 30))
+
+        # caixa da fala
+        pygame.draw.rect(screen, DARK_BOX, (40, screen_height - 80 , screen_width - 80, 70), border_radius=10)
+        fala_atual = cena["falas"][indice_fala]
+
+        if len(texto_parcial) < len(fala_atual):
+            if tempo_atual - tempo_fala > velocidade_texto:
+                texto_parcial += fala_atual[len(texto_parcial)]
+                tempo_fala = tempo_atual
+
+        fala_renderizada = font.render(texto_parcial, True, WHITE)
+        screen.blit(fala_renderizada, (60, screen_height - 85))
+
+    pygame.display.flip()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            if inicio and event.key == pygame.K_SPACE:
+                inicio = False
+                continue
+
+            if event.key == pygame.K_RIGHT:
+                if not inicio:
+                    if texto_parcial != cenas[indice_cena]["falas"][indice_fala]:
+                        texto_parcial = cenas[indice_cena]["falas"][indice_fala]
+                    elif indice_fala < len(cenas[indice_cena]["falas"]) - 1:
+                        indice_fala += 1
+                        texto_parcial = ""
+                        tempo_fala = pygame.time.get_ticks()
+                    else:
+                        if indice_cena < len(cenas) - 1:
+                            indice_cena += 1
+                            indice_fala = 0
+                            texto_parcial = ""
+                            tempo_fala = pygame.time.get_ticks()
+
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
+
+
+*Precisa mudar a tela de início e colocar o som de fundo 
